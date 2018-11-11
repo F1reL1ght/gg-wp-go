@@ -29,6 +29,8 @@ type Device struct {
 	color Color
 }
 
+var database *datasource
+
 var devices map[string]*Device
 type HttpResponse map[string]interface{}
 
@@ -59,13 +61,15 @@ func main() {
 	http.HandleFunc("/register", _register)
 	http.HandleFunc("/devices", _devices)
 	http.HandleFunc("/set-rgb", _setRGB)
-
+	http.HandleFunc("/add-desk", _addDesk)
+	http.HandleFunc("/add-collection", _addCollection)
 
 
 	if err := http.ListenAndServe(":8090", nil); err != nil {
 		panic(err)
 	}
 }
+
 
 
 func _health() {
