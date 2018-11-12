@@ -4,17 +4,19 @@ import (
 	"net/http"
 	"io/ioutil"
 	"encoding/json"
+	//"fmt"
+	"fmt"
 )
 
 type Desk struct {
-	Name string
-	IP string
-	Port string
-	Red int
-	Green int
-	Blue int
-	Health string
-	Retries int
+	Name string `json:"name"`
+	IP string	`json:"ip"`
+	Port string `json:"port"`
+	Red int 	`json:"red"`
+	Green int	`json:"green"`
+	Blue int	`json:"blue"`
+	Health string `json:"health"`
+	Retries int	`json:"retries"`
 }
 
 type Collection struct {
@@ -42,6 +44,7 @@ func _addDesk(w http.ResponseWriter, r *http.Request) {
 	}
 	var desk Desk
 	err = json.Unmarshal(body, &desk)
+
 	if err != nil {
 		responseBody, _ = json.Marshal(HttpResponse{"code": 500, "details": http.StatusInternalServerError, "error": err.Error() })
 		w.Write(responseBody)
@@ -49,7 +52,6 @@ func _addDesk(w http.ResponseWriter, r *http.Request) {
 	}
 	desk.Health = "false"
 	_, err = addDesk(desk)
-
 
 	if err == nil {
 		responseBody, _ = json.Marshal(HttpResponse{"code": 200, "details": "added Desk successfully", "error": "" })
@@ -78,25 +80,34 @@ func _addCollection(w http.ResponseWriter, r *http.Request) {
 	if err == nil {
 		responseBody, _ = json.Marshal(HttpResponse{"code": 200, "details": "added Collection successfully", "error": "" })
 	} else {
+		fmt.Println(err)
 		responseBody, _ = json.Marshal(HttpResponse{"code": 500, "details": http.StatusInternalServerError, "error": err.Error() })
 	}
 	w.Write(responseBody)
 }
 
+func _getCollectionList(w http.ResponseWriter, r *http.Request) {
+	getCollections()
+}
+
 func addDesk(desk Desk) (bool, error) {
-	return (*database).AddDesk(desk)
+	idx, err := (database).AddDesk(desk)
+	if err != nil {
+		return false, err
+	}
+	return  (database).AddDeskToCollection(idx, 1)
 }
 
 func addCollection(collection Collection) (bool, error) {
-	return (*database).AddCollection(collection)
+	return (database).AddCollection(collection)
 }
 
 /* Add Desk to Collection */
-func addDeskToCollection(deskID int, collectionID int) (bool, error) {
-	return (*database).AddDeskToCollection(deskID, collectionID)
+func addDeskToCollection(deskID int64, collectionID int64) (bool, error) {
+	return (database).AddDeskToCollection(deskID, collectionID)
 }
 
 /* gets all Collections and Associated Desks */
 func getCollections() () {
-
+	fmt.Println((database).GetDeskCollections())
 }

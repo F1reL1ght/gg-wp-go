@@ -1,13 +1,13 @@
 package main
 
 type datasource interface {
-	query(...interface{}) (interface{}, error)
+	//Query(params ...interface{} ) (interface{}, error)
 	AddDesk(desk Desk) (bool, error)
 	AddCollection(collection Collection) (bool, error)
 	/*Removes Desk from Group*/
-	RemoveDesk(deskID int, collectionID int) (bool, error)
+	//RemoveDesk(deskID int, collectionID int) (bool, error)
 	/*Removes Group and All associations to the group*/
-	RemoveCollection(collectionID int) (bool, error)
+	//RemoveCollection(collectionID int) (bool, error)
 	AddDeskToCollection(deskID int, collectionID int) (bool, error)
 	RemoveDeskFromCollection(associationID int) (bool, error)
 }

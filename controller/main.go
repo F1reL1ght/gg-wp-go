@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"database/sql"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -29,7 +28,7 @@ type Device struct {
 	color Color
 }
 
-var database *datasource
+var database *sqlite
 
 var devices map[string]*Device
 type HttpResponse map[string]interface{}
@@ -63,6 +62,7 @@ func main() {
 	http.HandleFunc("/set-rgb", _setRGB)
 	http.HandleFunc("/add-desk", _addDesk)
 	http.HandleFunc("/add-collection", _addCollection)
+	http.HandleFunc("/get-collection-list", _getCollectionList)
 
 
 	if err := http.ListenAndServe(":8090", nil); err != nil {
@@ -89,24 +89,11 @@ func _health() {
 
 func init() {
 	//TODO: Check if the desk, group, deskgroup tables are created if not create them
-	db, err := sql.Open("sqlite3", "./ggwp.db")
+	var err error
+	database, err = NewSQLiteDriver("./ggwp.db")
 	if err != nil {
-		fmt.Println(err)
 		panic(err)
 	}
-	db.Exec(`PRAGMA foreign_keys=ON`)
-	tblDesk, err := db.Prepare("CREATE TABLE IF NOT EXISTS desk (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, ip TEXT, port TEXT, red INTEGER, green INTEGER, blue INTEGER, health TEXT, retries INTEGER)")
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	tblDesk.Exec()
-	tblGroup, err := db.Prepare("CREATE TABLE IF NOT EXISTS collection (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
-	tblGroup.Exec()
-	db.Exec("CREATE TABLE IF NOT EXISTS deskcollection(id INTEGER PRIMARY KEY AUTOINCREMENT, collection_id INTEGER, desk_id INTEGER FOREIGN KEY collection_id REFERENCES collection(id))")
+	database.init()
 	fmt.Println("func[init] initilization complete")
 	}
