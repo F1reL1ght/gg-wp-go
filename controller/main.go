@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 	_ "github.com/mattn/go-sqlite3"
+	"net"
+	"log"
 )
 
 type RegisterationRequest struct {
@@ -95,5 +97,22 @@ func init() {
 		panic(err)
 	}
 	database.init()
+
+
+	//Broadcast Address
+	c, err := net.ListenPacket("udp", ":0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer c.Close()
+
+	dst, err := net.ResolveUDPAddr("udp", "255.255.255.255:8032")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := c.WriteTo([]byte("127.0.0.1:8090"), dst); err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("func[init] initilization complete")
 	}

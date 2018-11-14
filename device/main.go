@@ -6,24 +6,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"time"
-	"os"
+	//"time"
+	//"os"
+	"net"
+	"log"
 )
 const MAX_RETRY = 10
 var RETRY = 0
 func main() {
 
 
-	 isRegistered := register()
-	for !isRegistered {
-		RETRY++
-		time.Sleep(1000)
-		if RETRY >= MAX_RETRY {
-			os.Exit(-1)
-		}
-		isRegistered = register()
-		fmt.Println(isRegistered)
+	// isRegistered := register()
+	//for !isRegistered {
+	//	RETRY++
+	//	time.Sleep(1000)
+	//	if RETRY >= MAX_RETRY {
+	//		os.Exit(-1)
+	//	}
+	//	isRegistered = register()
+	//	fmt.Println(isRegistered)
+	//}
+	//addr, err :=  net.ResolveUDPAddr("udp:", ":8032")
+	//fmt.Println("Here1")
+	c, err := net.ListenPacket("udp", ":8032")
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	defer c.Close()
+	b := make([]byte, 512)
+
+	n, peer, err := c.ReadFrom(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println((string)(b))
+	fmt.Println(n, "bytes read from", peer)
+
+
 
 
 	http.HandleFunc("/health", _health)

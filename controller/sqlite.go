@@ -97,7 +97,7 @@ func (driver *sqlite) AddDesk(desk Desk) (int64, error) {
 		fmt.Sprintf("%v", desk.Blue) + `,` +
 		`'` + desk.Health + `'` + `,` +
 		fmt.Sprintf("%v", desk.Retries) +`)`
-		fmt.Println(sqlQuery)
+		//fmt.Println(sqlQuery)
 		result, err := driver.Insert(sqlQuery)
 		if err != nil {
 			return 0, err
@@ -111,18 +111,15 @@ func (driver *sqlite) AddCollection(collection Collection) (bool, error) {
 	sqlQuery := `INSERT INTO ` + TABLE_COLLECTION + `(name) VALUES ('` + collection.Name + `')`
 	//fmt.Println(sqlQuery)
 	result, err := driver.Insert(sqlQuery)
-	r, err := result.(sql.Result).RowsAffected()
-	fmt.Printf("%v",r )
+	_, err = result.(sql.Result).RowsAffected()
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-
-
 func (driver sqlite) AddDeskToCollection(deskID int64, collectionID int64) (bool, error) {
-	sqlQuery := `INSERT INTO ` + TABLE_COLLECTION + `(collection_id, desk_id) VALUES (` + fmt.Sprintf("%v", deskID) + `,` + fmt.Sprintf("%v", collectionID) + `)`
+	sqlQuery := `INSERT INTO ` + TABLE_DESK_COLLECTION + `(collection_id, desk_id) VALUES (` + fmt.Sprintf("%v", collectionID) + `,` + fmt.Sprintf("%v", deskID) + `)`
 	_, err := driver.Insert(sqlQuery)
 	if err != nil {
 		return false, err
@@ -131,19 +128,33 @@ func (driver sqlite) AddDeskToCollection(deskID int64, collectionID int64) (bool
 }
 
 /* Delete the Association from the Database*/
-func (driver sqlite) RemoveDeskFromCollection(associationID int) (bool, error) {
-	sqlQuery := `DELETE FROM ` + TABLE_DESK_COLLECTION + ` WHERE id = ` + fmt.Sprintf("%v", associationID)
+func (driver sqlite) RemoveDeskFromCollection(collection_id int, desk_id int) (bool, error) {
+	//sqlQuery := `DELETE FROM ` + TABLE_DESK_COLLECTION + ` WHERE id = ` + fmt.Sprintf("%v", associationID)
+	//_, err := driver.Delete(sqlQuery)
+	//if err != nil {
+	//	return false, err
+	//}
+	return true, nil
+}
+
+func (driver sqlite) RemoveDesk(deskID int)(bool, error) {
+	sqlQuery := `DELETE FROM ` + TABLE_DESK + ` WHERE id = ` + fmt.Sprintf("%v", deskID)
 	_, err := driver.Delete(sqlQuery)
+	if err != nil {
+		return false, err
+	}
+	sqlQuery = `DELETE FROM ` + TABLE_DESK_COLLECTION + ` WHERE desk_id = ` + fmt.Sprintf("%v", deskID)
+	_, err = driver.Delete(sqlQuery)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
-func (driver sqlite) GetDeskCollections() (*DeskCollection, error) {
+func (driver sqlite) GetDeskCollections() (interface{}, error) {
 	sqlQuery := `SELECT * FROM ` + TABLE_COLLECTION + ` INNER JOIN ` + TABLE_DESK_COLLECTION + ` ON ` + TABLE_COLLECTION + `.id = ` + TABLE_DESK_COLLECTION + `.collection_id` +
 				` INNER JOIN ` + TABLE_DESK + ` ON ` + TABLE_DESK + `.id = ` + TABLE_DESK_COLLECTION + `.desk_id`
 
-	fmt.Println(sqlQuery)
-	return nil, nil
+	//fmt.Println(sqlQuery)
+	return driver.db.Query(sqlQuery)
 }
